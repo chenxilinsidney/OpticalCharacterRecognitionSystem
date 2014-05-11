@@ -27,8 +27,8 @@ COpticalCharacterRecognitionSystemDlg::COpticalCharacterRecognitionSystemDlg(CWn
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
     rect_image_gray = CRect(0, 0, 0, 0);
     rect_image_binary = CRect(0, 0, 0, 0);
-    ocr.setImageBinary(Mat(ocr.H, ocr.W, CV_8UC1, Scalar::all(0)));
-    ocr.setImageGray(Mat(ocr.H, ocr.W, CV_8UC1, Scalar::all(0)));
+    ocr.setImageBinary(Mat(36, 20, CV_8UC1, Scalar::all(0)));
+    ocr.setImageGray(Mat(36, 20, CV_8UC1, Scalar::all(0)));
 }
 
 void COpticalCharacterRecognitionSystemDlg::DoDataExchange(CDataExchange* pDX)
@@ -42,6 +42,7 @@ BEGIN_MESSAGE_MAP(COpticalCharacterRecognitionSystemDlg, CDialogEx)
     ON_BN_CLICKED(IDC_BUTTON_GRAYIMAGE, &COpticalCharacterRecognitionSystemDlg::OnClickedButtonGrayimage)
     ON_BN_CLICKED(IDC_BUTTON_BINARYIMAGE, &COpticalCharacterRecognitionSystemDlg::OnClickedButtonBinaryimage)
     ON_BN_CLICKED(IDC_BUTTON_RECOGNITION, &COpticalCharacterRecognitionSystemDlg::OnClickedButtonRecognition)
+    ON_BN_CLICKED(IDC_BUTTON_BINARY_GENERATE, &COpticalCharacterRecognitionSystemDlg::OnClickedButtonBinaryGenerate)
 END_MESSAGE_MAP()
 
 
@@ -147,10 +148,19 @@ void COpticalCharacterRecognitionSystemDlg::OnPaint()
     SetDlgItemText(IDC_BUTTON_BINARYIMAGE, LPCTSTR("Open-Binary-Image"));
     GetDlgItem(IDC_BUTTON_BINARYIMAGE)->SetFont(&testfont);
     GetDlgItem(IDC_BUTTON_BINARYIMAGE)->ModifyStyle(SS_LEFT|SS_RIGHT,SS_CENTER,TRUE);
+    // IDC_BUTTON_BINARYIMAGE
+    GetDlgItem(IDC_BUTTON_BINARY_GENERATE)->MoveWindow(
+        image_interval * 3 + image_width * 2,
+        image_interval * 9,
+        static_width,
+        static_height);
+    SetDlgItemText(IDC_BUTTON_BINARY_GENERATE, LPCTSTR("Create-Binary-Image"));
+    GetDlgItem(IDC_BUTTON_BINARY_GENERATE)->SetFont(&testfont);
+    GetDlgItem(IDC_BUTTON_BINARY_GENERATE)->ModifyStyle(SS_LEFT|SS_RIGHT,SS_CENTER,TRUE);
     // IDC_BUTTON_RECOGNITION
     GetDlgItem(IDC_BUTTON_RECOGNITION)->MoveWindow(
         image_interval * 3 + image_width * 2,
-        image_interval * 9,
+        image_interval * 12,
         static_width * 1.2,
         static_height * 1.2);
     SetDlgItemText(IDC_BUTTON_RECOGNITION, LPCTSTR("Recognize Character"));
@@ -159,7 +169,7 @@ void COpticalCharacterRecognitionSystemDlg::OnPaint()
     // IDC_STATIC_RESULT_TIP
     GetDlgItem(IDC_STATIC_RESULT_TIP)->MoveWindow(
         image_interval * 3 + image_width * 2,
-        image_interval * 11,
+        image_interval * 14,
         static_width,
         static_height);
     SetDlgItemText(IDC_STATIC_RESULT_TIP, LPCTSTR("Result:"));
@@ -170,10 +180,10 @@ void COpticalCharacterRecognitionSystemDlg::OnPaint()
         image_interval * 3 + image_width * 2,
         image_interval * 14,
         static_width,
-        static_height * 20);
+        static_height * 5);
     SetDlgItemText(IDC_STATIC_RESULT_SHOW, LPCTSTR(" "));
     CFont resultfont;
-    resultfont.CreatePointFont(350, "Î¢ÈíÑÅºÚ");
+    resultfont.CreatePointFont(400, "Î¢ÈíÑÅºÚ");
     GetDlgItem(IDC_STATIC_RESULT_SHOW)->SetFont(&resultfont);
     GetDlgItem(IDC_STATIC_RESULT_SHOW)->ModifyStyle(SS_LEFT|SS_RIGHT,SS_CENTER,TRUE);
     // IDCANCEL
@@ -279,6 +289,21 @@ void COpticalCharacterRecognitionSystemDlg::OnClickedButtonGrayimage()
         ocr.setImageGray(image_gray);
         PlayImage(image_gray, IDC_IMAGE_GRAY, rect_image_gray);
     }
+    // read binary image if name different only for 'gray' and 'bw'
+    CString newFileName = FileName;
+    int pos = newFileName.Find(LPCTSTR("gray"));
+    if (pos != -1) {
+        newFileName.Replace(LPCTSTR("gray"), LPCTSTR("bw"));
+        Mat image_binary = imread(newFileName.GetString(), CV_8UC1);
+        if (image_binary.data != NULL) {
+            ocr.setImageBinary(image_binary);
+            PlayImage(image_binary, IDC_IMAGE_BINARY, rect_image_binary);
+        }
+#ifdef _DEBUG
+        TRACE("Pos = %d\n", pos);
+#endif
+    }
+
 }
 
 // read binary image
@@ -299,6 +324,20 @@ void COpticalCharacterRecognitionSystemDlg::OnClickedButtonBinaryimage()
     } else {
         ocr.setImageBinary(image_binary);
         PlayImage(image_binary, IDC_IMAGE_BINARY, rect_image_binary);
+    }
+}
+
+// generate binary image by gray image
+void COpticalCharacterRecognitionSystemDlg::OnClickedButtonBinaryGenerate()
+{
+    // TODO: Add your control notification handler code here
+    Mat image_gray;
+    image_gray = ocr.getImageGray(image_gray);
+    if (image_gray.data != NULL) {
+        double otsu = threshold(image_gray, image_gray, 0, 255, THRESH_OTSU);
+        threshold(image_gray, image_gray, otsu, 255, THRESH_BINARY);
+        ocr.setImageBinary(image_gray);
+        PlayImage(image_gray, IDC_IMAGE_BINARY, rect_image_binary);
     }
 }
 
@@ -329,7 +368,12 @@ void COpticalCharacterRecognitionSystemDlg::OnClickedButtonRecognition()
     // get character radio
     CString str;
     GetDlgItem(IDC_EDIT_RATIO)->GetWindowText(str);
-    int n = _tstoi(str);
+    double ratio = _tstoi(str);
+    ocr.setCharacterRatio(ratio);
+#ifdef _DEBUG
+    TRACE(" setCharacterType = %d\n", state);
+    TRACE(" setCharacterRatio = %d\n", ratio);
+#endif
     // recognition
     char result = ocr.getRecognitionResult();
     // show result
@@ -340,3 +384,4 @@ void COpticalCharacterRecognitionSystemDlg::OnClickedButtonRecognition()
     GetDlgItem(IDC_STATIC_RESULT_SHOW)->ModifyStyle(SS_LEFT|SS_RIGHT,SS_CENTER,TRUE);
     GetDlgItem(IDC_STATIC_RESULT_SHOW)->SetWindowTextA(result_str);
 }
+

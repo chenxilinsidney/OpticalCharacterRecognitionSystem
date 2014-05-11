@@ -1,19 +1,16 @@
 /*************************************************************************
   Copyright (C),1988-1999, Cita109 Tech. Co., Ltd.  
-  FileName:connect_domain_identification.c 
+  FileName:Connect_domain_identification.cpp
   Author: ChenXiLin       Version: 1.1         Date: 20131001
   Description:     联通域识别子函数  
 *************************************************************************/
 /**************************** INCLUDE FILES *****************************/
-#include "stdafx.h"
 #include "Cocr.h"
 /**************************** INCLUDE FILES *****************************/
 /*************************************************************************
  Function:       ConnectedDomainIdentification  
  Description:    1.采用 floodfill 的标记函数_对归一化后字符标记，
                  无需输入字符尺寸;
-                 2.采用floodfill的标记函数_对刚刚旋转矫正后字符（未归一化）
-                 进行连通域标记，需要输入字符尺寸
  Calls:          none
  CalledBy:       RotateChar;JudgeChar.c;JudgeLetter.c;JudgeNum.c
  TableAccessed:  none

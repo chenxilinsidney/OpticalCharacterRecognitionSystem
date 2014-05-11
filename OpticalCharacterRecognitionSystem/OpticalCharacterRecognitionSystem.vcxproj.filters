@@ -48,9 +48,6 @@
     <ClInclude Include="CvvImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModelNum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Model1I.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,6 +55,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModelLetter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelNum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

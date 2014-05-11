@@ -7,7 +7,9 @@
 *.ipch
 Temp/
 ipch/
-
+# not open code
+OpticalCharacterRecognitionSystem/Judge*
+OpticalCharacterRecognitionSystem/Model*
 # Compiled Dynamic libraries
 # *.so
 # *.dylib

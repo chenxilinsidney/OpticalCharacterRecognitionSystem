@@ -44,4 +44,5 @@ public:
     afx_msg void OnClickedButtonGrayimage();
     afx_msg void OnClickedButtonBinaryimage();
     afx_msg void OnClickedButtonRecognition();
+    afx_msg void OnClickedButtonBinaryGenerate();
 };

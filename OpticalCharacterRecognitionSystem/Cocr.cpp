@@ -1,7 +1,3 @@
-
-// FOR MFC
-#include "stdafx.h"
-
 // COCR CLASS
 #include "Cocr.h"
 
@@ -28,9 +24,10 @@ void Cocr::setImageGray(const Mat& image_gray)
         cvtColor(image_gray, image_gray, CV_BGR2GRAY);
     }
     if (image_gray.rows != image_height || image_gray.cols != image_width) {
-        resize(image_gray, image_gray, Size(image_width, image_height));
+        resize(image_gray, this->image_gray, Size(image_width, image_height));
+    } else {
+        image_gray.copyTo(this->image_gray);
     }
-    image_gray.copyTo(this->image_gray);
 }
 void Cocr::setImageBinary(const Mat& image_binary)
 {
@@ -38,10 +35,11 @@ void Cocr::setImageBinary(const Mat& image_binary)
         cvtColor(image_binary, image_binary, CV_BGR2GRAY);
     }
     if (image_binary.rows != image_height || image_binary.cols != image_width) {
-        resize(image_binary, image_binary, Size(image_width, image_height));
-        threshold(image_binary, image_binary, 128, 255, THRESH_BINARY);
+        resize(image_binary, this->image_binary, Size(image_width, image_height));
+        threshold(this->image_binary, this->image_binary, 128, 255, THRESH_BINARY);
+    } else {
+        image_binary.copyTo(this->image_binary);
     }
-    image_binary.copyTo(this->image_binary);
 }
 void Cocr::setCharacterType(int char_type /* = CHAR */)
 {
@@ -54,7 +52,7 @@ void Cocr::setCharacterRatio(double char_ratio /* = 1.0 */)
 // get value
 Mat& Cocr::getImageGray(Mat& image_gray) const
 {
-    this->image_binary.copyTo(image_gray);
+    this->image_gray.copyTo(image_gray);
     return image_gray;
 }
 Mat& Cocr::getImageBinary(Mat& image_binary) const
@@ -70,6 +68,14 @@ double Cocr::getCharacterRatio() const
 {
     return this->character_ratio;
 }
+// get recognition result main function
+char Cocr::getRecognitionResult()
+{
+    recognitionProcess();
+    recognitionResultTrans2Char();
+    return recognition_result;
+}
+// result type short translate to type char
 void Cocr::recognitionResultTrans2Char()
 {
     switch (character_type)
@@ -91,13 +97,7 @@ void Cocr::recognitionResultTrans2Char()
         break;
     }
 }
-char Cocr::getRecognitionResult()
-{
-    recognitionProcess();
-    recognitionResultTrans2Char();
-    return recognition_result;
-}
-
+// recognition process
 void Cocr::recognitionProcess()
 {
     // Mat to point
@@ -111,10 +111,11 @@ void Cocr::recognitionProcess()
             *(img_g + i * image_width + j) = *(p_mat_g + j);
         }
     }
+    // recognition before judging character_ratio and character_type
     if (character_ratio > RATIO_THR) {
         switch (character_type) {
         case CHAR:
-            recognition_result = judge1I(img_g);
+            recognition_result = char(judge1I(img_g));
             break;
         case NUMBER:
             recognition_result = 1;
@@ -129,13 +130,13 @@ void Cocr::recognitionProcess()
     } else {
         switch (character_type) {
         case CHAR:
-            recognition_result = judgeChar(img_b, img_g, THR_OFFSET_FROM_LEAST);
+            recognition_result = char(judgeChar(img_b, img_g, THR_OFFSET_FROM_LEAST));
             break;
         case NUMBER:
-            recognition_result = judgeNum(img_b, img_g, THR_OFFSET_FROM_LEAST);
+            recognition_result = char(judgeNum(img_b, img_g, THR_OFFSET_FROM_LEAST));
             break;
         case LETTER:
-            recognition_result = judgeLetter(img_b, img_g, THR_OFFSET_FROM_LEAST);
+            recognition_result = char(judgeLetter(img_b, img_g, THR_OFFSET_FROM_LEAST));
             break;
         default:
             recognition_result = -1;
@@ -147,7 +148,4 @@ void Cocr::recognitionProcess()
     img_b = NULL;
     delete img_g;
     img_g = NULL;
-#ifdef _DEBUG
-    TRACE("result = %d\n", recognition_result);
-#endif
 }

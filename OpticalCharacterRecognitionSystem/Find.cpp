@@ -1,24 +1,10 @@
 /*************************************************************************
   Copyright (C),1988-1999, Cita109 Tech. Co., Ltd.  
-  FileName:floodfill.c 
+  FileName:Find.cpp
   Author: ChenXiLin       Version: 1.1         Date: 20131001
   Description:     查找数组   
-  Version:        1.1  查找数组
-  FunctionList:
-    1.short find(const short* array_input,
-                    const short array_length,
-                    const short value_min,
-                    const short value_max,
-                    short* array_output);
-  History:          add new function, edit the comments
-     <author>         <time>   <version >  <desc>  
-     Chen Xin Yuan    13/02/01    1.0     build this moudle 
-     Chen Xi Lin      13/10/01    1.1     modify the comments
-     Wan Yan Ying     14/01/15    1.1     add new function 4
-     Chen Xi Lin      14/02/21    1.1     speed function 2 and function 4
 *************************************************************************/
 /**************************** INCLUDE FILES *****************************/
-#include "stdafx.h"
 #include "Cocr.h"
 /**************************** INCLUDE FILES *****************************/
 /*************************************************************************

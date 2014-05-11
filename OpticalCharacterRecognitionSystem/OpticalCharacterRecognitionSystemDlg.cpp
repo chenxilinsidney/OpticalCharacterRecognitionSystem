@@ -374,6 +374,25 @@ void COpticalCharacterRecognitionSystemDlg::OnClickedButtonRecognition()
     TRACE(" setCharacterType = %d\n", state);
     TRACE(" setCharacterRatio = %d\n", ratio);
 #endif
+    // detect if binary image exist
+    Mat image_binary;
+    image_binary = ocr.getImageBinary(image_binary);
+    int sum = 0;
+    for (int i = 0; i < image_binary.rows; i++) {
+    	uchar* p = image_binary.ptr<uchar>(i);
+        for (int j = 0; j < image_binary.cols; j++) {
+        	sum += *(p + j);
+        }
+    }
+    if (sum == 0) {
+        image_binary = ocr.getImageGray(image_binary);
+        if (image_binary.data != NULL) {
+            double otsu = threshold(image_binary, image_binary, 0, 255, THRESH_OTSU);
+            threshold(image_binary, image_binary, otsu, 255, THRESH_BINARY);
+            ocr.setImageBinary(image_binary);
+            PlayImage(image_binary, IDC_IMAGE_BINARY, rect_image_binary);
+        }
+    }
     // recognition
     char result = ocr.getRecognitionResult();
     // show result
